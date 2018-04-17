@@ -13,6 +13,7 @@ from tagging.utils import check_tag_length, get_tag_parts, parse_tag_input
 class TagAdminForm(forms.ModelForm):
     class Meta:
         model = Tag
+        fields = '__all__'
 
     def _clean_field(self, field_name, max_length, error_msg):
         value = self.cleaned_data[field_name]
@@ -68,7 +69,7 @@ class TagField(forms.CharField):
         for tag_name in parse_tag_input(value, default_namespace=self.default_namespace):
             try:
                 check_tag_length(get_tag_parts(tag_name))
-            except ValueError, e:
+            except (ValueError, e):
                 if len(e.args) < 3:
                     raise
                 part, max_len = e.args[1:3]
