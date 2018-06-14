@@ -17,6 +17,8 @@ class TagAdminForm(forms.ModelForm):
 
     def _clean_field(self, field_name, max_length, error_msg):
         value = self.cleaned_data[field_name]
+        if not value:
+            value = ''
         if '"' in value:
             raise forms.ValidationError(
                 _("""The '"' character is not allowed."""))

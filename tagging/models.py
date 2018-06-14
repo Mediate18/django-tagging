@@ -16,6 +16,9 @@ from tagging import conf
 from tagging.utils import calculate_cloud, get_tag_list, get_tag_parts, get_queryset_and_model, normalize_tag_part, parse_tag_input
 from tagging.utils import LOGARITHMIC
 
+from django.conf import settings
+import uuid
+
 qn = connection.ops.quote_name
 
 ############
@@ -43,12 +46,12 @@ class TagManager(models.Manager):
 
         # Remove tags which no longer apply
         tags_for_removal = [tag for tag in current_tags \
-                            if unicode(tag) not in updated_tag_names]
+                            if str(tag) not in updated_tag_names]
         if len(tags_for_removal):
             TaggedItem._default_manager.filter(content_type__pk=ctype.pk,
                 object_id=obj.pk, tag__in=tags_for_removal).delete()
         # Add new tags
-        current_tag_names = [unicode(tag) for tag in current_tags]
+        current_tag_names = [str(tag) for tag in current_tags]
         for tag_name in updated_tag_names:
             if tag_name not in current_tag_names:
                 tag, created = self.get_or_create(**get_tag_parts(tag_name))
@@ -493,13 +496,20 @@ class Tag(models.Model):
             name = '%s=%s' % (name, normalize_tag_part(self.value))
         return name
 
+    def __str__(self):
+        return self.__unicode__()
+
 class TaggedItem(models.Model):
     """
     Holds the relationship between a tag and the item being tagged.
     """
     tag          = models.ForeignKey(Tag, verbose_name=_('tag'), related_name='items', on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, verbose_name=_('content type'), on_delete=models.CASCADE)
-    object_id    = models.PositiveIntegerField(_('object id'), db_index=True)
+    if getattr(settings, 'TAGGING_OBJECT_ID_TYPE', "") == "uuid":
+        object_id = models.UUIDField(_('object id'), db_index=True)
+    else:
+        object_id = models.PositiveIntegerField(_('object id'), db_index=True)
+
     object       = GenericForeignKey('content_type', 'object_id')
 
     objects = TaggedItemManager()

@@ -221,7 +221,7 @@ def edit_string_for_tags(tags, default_namespace=None,
         filter_namespaces = ()
     if exclude_namespaces is None:
         exclude_namespaces = ()
-    if isinstance(tags, types.StringTypes):
+    if isinstance(tags, str):
         tags = [get_tag_parts(tag)
                 for tag in parse_tag_input(tags,
                     default_namespace=default_namespace)]
