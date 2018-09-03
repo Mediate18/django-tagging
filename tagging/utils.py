@@ -7,7 +7,6 @@ calculation.
 """
 import re
 import math
-import types
 
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -336,22 +335,22 @@ def get_tag_list(tags, wildcard=None, default_namespace=None):
         return [tags]
     elif isinstance(tags, QuerySet) and tags.model is Tag:
         return tags
-    elif isinstance(tags, types.StringTypes):
+    elif isinstance(tags, str):
         q = get_tag_filter_lookup(tags,
             wildcard=wildcard, default_namespace=default_namespace)
         if q is None:
             return []
         return Tag.objects.filter(q)
-    elif isinstance(tags, (types.ListType, types.TupleType)):
+    elif isinstance(tags, (list, tuple)):
         if len(tags) == 0:
             return tags
         contents = set()
         for item in tags:
-            if isinstance(item, types.StringTypes):
+            if isinstance(item, str):
                 contents.add('string')
             elif isinstance(item, Tag):
                 contents.add('tag')
-            elif isinstance(item, (types.IntType, types.LongType)):
+            elif isinstance(item, (int,)):
                 contents.add('int')
         if len(contents) == 1:
             if 'string' in contents:
@@ -405,7 +404,7 @@ def get_tag_filter_lookup(tags, wildcard=None, default_namespace=None):
         keep_quotes = (wildcard,)
     else:
         keep_quotes = ()
-    if isinstance(tags, types.StringTypes):
+    if isinstance(tags, str):
         tags = parse_tag_input(tags,
             keep_quotes=keep_quotes,
             default_namespace=default_namespace)
@@ -460,10 +459,10 @@ def get_tag(tag, default_namespace=None):
         return tag
 
     try:
-        if isinstance(tag, types.StringTypes):
+        if isinstance(tag, str):
             return Tag.objects.get(**get_tag_parts(tag,
                 default_namespace=default_namespace))
-        elif isinstance(tag, (types.IntType, types.LongType)):
+        elif isinstance(tag, (int,)):
             return Tag.objects.get(id=tag)
     except Tag.DoesNotExist:
         pass
